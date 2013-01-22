@@ -1,15 +1,15 @@
 (ns wp-golfer.core)
-(def *wiki* "http://en.wikipedia.org/wiki/")
-(def *link-header* "/wiki/")
-(def *link* (re-pattern (str *link-header* "[a-zA-Z_]*")))
+(def ^:dynamic *wiki* "http://en.wikipedia.org/wiki/")
+(def link-header "/wiki/")
+(def link (re-pattern (str link-header "[a-zA-Z_]*")))
 
 (defn child-articles 
   "Retrieve the articles linked to by this article."
   [article]
 	(let [url (str *wiki* article)
         html (slurp url) 
-        links (re-seq *link* html)]
-    (map (fn [it] (.replaceAll it *link-header* "")) links)
+        links (re-seq link html)]
+    (map (fn [it] (.replaceAll it link-header "")) links)
     )
   )
 
@@ -50,10 +50,6 @@
     )
   )
         
-(defn reconstruct-path [parents finish] 
-  (pop (reverse (reconstruct-1 (vector finish) parents)))
-  )
-
 (defn reconstruct-1 [path parents]
   (if (some (fn [x] (= :start x)) path)
     path
@@ -63,7 +59,13 @@
       (recur nPath parents)
       )
     )
+  )        
+        
+(defn reconstruct-path [parents finish] 
+  (pop (reverse (reconstruct-1 (vector finish) parents)))
   )
+
+
         
 (defn golf [start finish] 
   ;;Naive forward breadth-first, to start with.
