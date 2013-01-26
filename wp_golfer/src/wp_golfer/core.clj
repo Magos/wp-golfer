@@ -13,23 +13,6 @@
     )
   )
 
-(defn expand [parents frontier parent children]
-	(def ^:dynamic nParents parents)
-	(def ^:dynamic nFrontier (drop 1 frontier))
-  (doseq [article children]
-    (if (contains? nParents article)
-      ;;If this article already has a parent, do nothing.
-      nil
-      ;;If it doesn't, add it and its parent.
-      (
-       (def nParents (assoc nParents article parent))
-       (def nFrontier (conj nFrontier article))
-       )
-      )
-    )
-  (vector nParents nFrontier)
-  )
-
 (defn search [frontier parents finish depth]
   ;;If map contains finish
   (if (or (< 50 depth) (contains? parents finish))
@@ -38,31 +21,33 @@
     ;;else:
     (let [;;Pop first member off queue
           article (nth frontier 0)
-          ;;Get child articles.
-          children (child-articles article)
+          ;;Get new child articles.
+          not-in-parents (fn [x] (not (contains? parents x)))
+          children (filter not-in-parents (child-articles article))
           ;;Add each to map and seq if not found in map already.
-          [nParents nFrontier] (expand parents frontier article children)
-          ;;Recur with smaller frontier, larger map.
+          nFrontier (drop 1 (into frontier children))
+          nParents (conj parents (zipmap children (repeat article)))
+          ;;Recur with smaller frontier, larger parent map.
           ]
       ;;nil
-      (recur nFrontier nParents finish (+ 1 depth))
+      (recur nFrontier nParents finish (inc depth))
       )
     )
   )
-        
-(defn reconstruct-1 [path parents]
-  (if (some (fn [x] (= :start x)) path)
-    path
-    (let [node (peek path)
-          parent (get parents node)
-          nPath (conj path parent)]
-      (recur nPath parents)
-      )
+           
+
+(defn reconstruct-path [parents finish]
+  (let [r1 (fn [path parents]
+             (if (some (fn [x] (= :start x)) path)
+               path
+               (let [node (peek path)
+                     parent (get parents node)
+                     nPath (conj path parent)]
+                 (recur nPath parents)
+                 )
+               ))]
+    (pop (reverse (r1 (vector finish) parents)))
     )
-  )        
-        
-(defn reconstruct-path [parents finish] 
-  (pop (reverse (reconstruct-1 (vector finish) parents)))
   )
 
 
