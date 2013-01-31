@@ -9,7 +9,7 @@
         hole (JTextField. 15)
         storage (atom "Output." :validator-fn string?)
         label (javax.swing.JLabel. @storage)
-        do-search (fn [x] (golf (.getText tee) (.getText hole)))
+        do-search (fn [x] (golf (value tee) (value hole)))
         update (fn [evt] (invoke-later (swap! storage do-search) (.setText label (str @storage))))
         update-action (action :handler update :name "Search")
         pan (flow-panel 

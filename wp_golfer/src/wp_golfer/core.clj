@@ -1,6 +1,6 @@
 (ns wp-golfer.core)
 (def ^:dynamic *wiki* "http://en.wikipedia.org/wiki/")
-(def link-header "/wiki/")
+(def link-header "href=\"/wiki/")
 (def link (re-pattern (str link-header "[a-zA-Z_]*")))
 
 (defn child-articles 
