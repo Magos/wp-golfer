@@ -1,6 +1,7 @@
 (ns wp-golfer.core-test
   (:use clojure.test
-        wp-golfer.core))
+        wp-golfer.core
+        wp-golfer.retrieval))
 
 
 (deftest offline-test
