@@ -2,7 +2,8 @@
 
 (def ^:dynamic *wiki* "http://en.wikipedia.org/wiki/")
 (def link-header "href=\"/wiki/")
-(def link (re-pattern (str link-header "[a-zA-Z_]*\"")))
+(def link (re-pattern (str link-header "[a-zA-Z_/]*\"")))
+(def retrieval-count (atom 0))
 
 (defn trim [it] (subs it (.length link-header) (dec (.length it))))
 
@@ -13,6 +14,7 @@
         html (slurp url) 
         links (re-seq link html)
         ]
+    (swap! retrieval-count inc)
     (map trim links)
     )
   )
@@ -25,6 +27,7 @@
        html (slurp url)
        links (re-seq link html)
        ]
+    (swap! retrieval-count inc)
     (map trim links)
     )
   )

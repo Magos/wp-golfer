@@ -22,3 +22,13 @@
      )
     )
   )
+
+(deftest league-wiki
+  (testing "A small (<2000 article) wiki limits the branching factor."
+    (with-redefs [*wiki* "http://leagueoflegends.wikia.com/wiki/"]
+      (let [search (golf "Caitlyn" "Minion")]
+        (is search (vector "Caitlyn" "League_of_Legends_Wiki" "List_of_champions" "Base_champion_statistics" "Movement_Speed" "Blade_of_the_Ruined_King" "Minion"))
+        )
+      )
+   )
+  )
