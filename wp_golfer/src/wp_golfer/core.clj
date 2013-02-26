@@ -1,23 +1,29 @@
 (ns wp-golfer.core (:require [wp-golfer.retrieval :as re]))
-(def ^:dynamic *depth-limit* 200)
+
+(defn expand
+  "Given a frontier and parent-map,
+  expands them with the results of (related-articles (first frontier))
+  while respecting existing relationships."
+  [frontier parent-map related-articles]
+  (let[article (first frontier)
+       not-existing? (comp not (partial contains? parent-map))
+       related (filter not-existing? (related-articles article))
+       nfrontier (drop 1 (into frontier related))
+       nparent-map (into parent-map (zipmap related (repeat article)))
+       ]
+    {:frontier nfrontier :parents nparent-map}
+    )
+  )
 
 (defn search 
   "Perform bi-directional search."
   [f-frontier b-frontier f-parents b-parents]
   (if (some (partial contains? f-parents) (keys b-parents))
     {:forward f-parents :backward b-parents}
-    (let [fwd-article (first f-frontier)
-          bck-article (first b-frontier)
-          not-in-f (comp not (partial contains? f-parents))
-          not-in-b (comp not (partial contains? b-parents))
-          fwd-children (filter not-in-f (re/child-articles fwd-article))
-          bck-parents (filter not-in-b (re/parent-articles bck-article))
-          nf-parents (into f-parents (zipmap fwd-children (repeat fwd-article)))
-          nb-parents (into b-parents (zipmap bck-parents (repeat bck-article)))
-          nf-frontier (drop 1 (into f-frontier fwd-children))
-          nb-frontier (drop 1 (into b-frontier bck-parents))
+    (let [forward (expand f-frontier f-parents re/child-articles)
+          backward (expand b-frontier b-parents re/parent-articles)
           ]
-      (recur nf-frontier nb-frontier nf-parents nb-parents)
+      (recur (:frontier forward) (:frontier backward) (:parents forward) (:parents backward))
       )
     )
   )
@@ -35,19 +41,9 @@
   
 (defn golf [start finish] 
   ;;Bi-directional breadth-first search.
-  ;;Create frontier (things to search) as vector.
-  ;;Create map of parents.
-  ;;Populate.
-  (let [ffrontier [start]
-        bfrontier [finish]
-        fparents {start :start}
-        bparents {finish :finish}
-        ;;Perform search.
-        result (search ffrontier bfrontier fparents bparents)]
+  (let [;;Perform search.
+        result (search [start] [finish] {start :start} {finish :finish})]
   ;;Reconstruct path using resulting parent-map and return.
-    (if (= :depth-limit-exceeded result)
-      (str result)
      (reconstruct-path result)
-     )
     )
   )
