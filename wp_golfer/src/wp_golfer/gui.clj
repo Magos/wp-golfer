@@ -1,29 +1,34 @@
 (ns wp-golfer.gui (:use wp-golfer.core seesaw.core)
-  (:import (javax.swing JTextField ) )
+  (:require [seesaw.bind :as bind] [seesaw.mig])
   )
-(defn golf-gui []
-  (native!)
-  (let [tee-lbl "Tee:"
-        hole-lbl "Hole:"
-        tee (JTextField. 15)
-        hole (JTextField. 15)
-        storage (atom "Output." :validator-fn string?)
-        label (javax.swing.JLabel. @storage)
-        do-search (fn [x] (golf (value tee) (value hole)))
-        update (fn [evt] (invoke-later (swap! storage do-search) (.setText label (str @storage))))
-        update-action (action :handler update :name "Search")
-        pan (flow-panel 
-             :align :left
-             :hgap 20
-             :items [tee-lbl tee hole-lbl hole update-action label]
-             )
-        ]
-    ;(listen tee :key update)
-    ;(listen hole :key update)
-    (doto (frame :content pan :on-close :dispose)
-      (pack!)
-      (show!))
+(def targets (atom ()))
+
+
+(defn golf-panel[]
+  (let[tee (text :columns 10)
+       hole (text :columns 10)
+       btn (button :text "Search")
+       output (label "")
+       update (fn [e] (let[result (wp-golfer.core/golf (first @targets) (last @targets))]
+                        (text! output (apply str (interpose " " result)))
+                        )
+                )
+       ]
+    (bind/bind
+     (bind/funnel tee hole)
+     (bind/transform (partial map #(.replaceAll % " " "_")))
+     targets
+     )
+    (listen btn :action update)
+    (seesaw.mig/mig-panel :items [[tee ""][hole ""] [btn "wrap"] [output "span"]])
     )
   )
 
-(golf-gui)
+(defn gui[]
+  (let [pnl (golf-panel)]
+  (-> (frame :title "Wikipedia Golfer" :content pnl)
+      pack!
+      show!
+   )
+  )
+  )
