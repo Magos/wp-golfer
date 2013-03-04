@@ -8,7 +8,7 @@
   Any other calls open the GUI."
   [& args]
   (if (= 2 (count args))
-    (println (apply golf args))
+    (println (apply golf (map #(.replaceAll % " " "_") args)))
     (wp-golfer.gui/gui)
    )
   )
