@@ -8,7 +8,9 @@ Therefore, the recommended application is for referees to use this to find diffi
 
 ## Usage
 
-FIXME
+If using the source, do "lein run" to open the GUI, or for example "lein run Truth Beauty" to perform a single search for a path between the articles Truth and Beauty. 
+Make sure to include exactly two arguments here; use quotes to enclose multi-word articles. Articles may be written as they appear in the URL (e.g. "Theory_of_forms") or with spaces (e.g. "Theory of forms").
+The jar file works the same way with regards to arguments, but start it with "java -jar /path/to/file" as usual.
 
 ## License
 
