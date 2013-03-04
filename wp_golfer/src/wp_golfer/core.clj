@@ -1,4 +1,5 @@
-(ns wp-golfer.core (:require [wp-golfer.retrieval :as re]))
+(ns wp-golfer.core (:require [wp-golfer.retrieval :as re])
+  )
 
 (defn expand
   "Given a frontier and parent-map,
