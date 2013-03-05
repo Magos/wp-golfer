@@ -28,6 +28,6 @@
        links (re-seq link html)
        ]
     (swap! retrieval-count inc)
-    (map trim links)
+    (filter (partial not= "Main_Page") (map trim links))
     )
   )
