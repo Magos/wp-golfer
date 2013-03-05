@@ -5,6 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 	:dependencies [[org.clojure/clojure "1.4.0"]
 					[seesaw "1.4.2"]
+          [quil "1.6.0"]
 					]
 	:main wp-golfer.entry-point
 	)
