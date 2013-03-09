@@ -40,7 +40,9 @@
   
   
   
-(defn golf [start finish] 
+(defn golf 
+  "Do a search for shortest path from start to finish."
+  [start finish] 
   ;;Bi-directional breadth-first search.
   (let [;;Perform search.
         result (search [start] [finish] {start :start} {finish :finish})]
@@ -48,3 +50,13 @@
      (reconstruct-path result)
     )
   )
+
+(defn golf-intermediates
+  "Do a search for shortest-path, returning not only the path
+  but also the parent maps that produced it."
+  [start finish]
+  (let [result (search [start] [finish] {start :start} {finish :finish})]
+     (merge result {:path (reconstruct-path result)})
+    )
+  )
+ 
