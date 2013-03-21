@@ -3,23 +3,24 @@
   )
 
 (def targets (atom () :validator seq?))
-(def row-model (atom [] :validator vector?))
 
 (defn golf-panel[]
-  (let[tee (text :columns 10 :tip "The article players start at.")
-       hole (text :columns 10 :tip "The article players are to navigate to.")
+  (let[tee (text :columns 10 :tip "The article players start at." :id :tee)
+       hole (text :columns 10 :tip "The article players are to navigate to." :id :hole)
        tbl (table :minimum-size [300 :by 125]
-                  :model [:columns [:article]
+                  :model [:columns [{:key :article :text "Article"}]
                           :rows []]
+                  :id :table
                   )
        update (fn [e] (let[result (golf (first @targets) (last @targets))]
-                        (config! tbl :model [:columns [:article]
+                        (config! tbl :model [:columns [{:key :article :text "Article"}]
                                              :rows (map vector result)])
                         )
                 )
        btn (button :action (action :handler update
                                    :name "Search"
                                    :tip "Perform a search")
+                   :id :button
                    )
        ]
     (bind/bind
