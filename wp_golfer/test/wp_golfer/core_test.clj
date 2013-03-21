@@ -1,8 +1,8 @@
 (ns wp-golfer.core-test
   (:use clojure.test
         wp-golfer.core
-        wp-golfer.retrieval))
-
+        wp-golfer.retrieval)
+  (:require clojure.set))
 
 (deftest offline-test
   (testing "Offline (communication mocked-out) search and path reconstruction"
@@ -10,15 +10,19 @@
           "Plato" (vector "Aristotle" "Socrates" "Natural_philosophy")
           "Functional_programming" (vector "Haskell" "Lisp")
           "Lisp" (vector "Common_Lisp" "Scheme" "Clojure")
-          )]
-    (with-redefs [child-articles (fn [a] (get resultmap a))]
-      (is (golf "Philosophy" "Philosophy") (vector "Philosophy"))
-      (is (golf "Philosophy" "Plato") (vector "Philosophy" "Plato" ))
-      (is (golf "Philosophy" "Aristotle") (vector "Philosophy" "Plato" "Aristotle"))
-      (is (golf "Functional_programming" "Functional_programming") (vector "Functional_programming"))
-      (is (golf "Functional_programming" "Lisp") (vector "Functional_programming" "Lisp"))
-      (is (golf "Functional_programming" "Clojure") (vector "Functional_programming" "Lisp" "Clojure"))
-      )
+          )
+          parentmap (clojure.set/map-invert resultmap)]
+    (with-redefs [child-articles (fn [a] (get resultmap a))
+                  parent-articles (fn [a] (get parentmap a))
+                  ]
+      (are [x y] (= x y)
+           (golf "Philosophy" "Philosophy") (vector "Philosophy")
+           (golf "Philosophy" "Plato") (vector "Philosophy" "Plato" )
+           (golf "Philosophy" "Aristotle") (vector "Philosophy" "Plato" "Aristotle")
+           (golf "Functional_programming" "Functional_programming") (vector "Functional_programming")
+           (golf "Functional_programming" "Lisp") (vector "Functional_programming" "Lisp")
+           (golf "Functional_programming" "Clojure") (vector "Functional_programming" "Lisp" "Clojure")
+           )      )
      )
     )
   )
