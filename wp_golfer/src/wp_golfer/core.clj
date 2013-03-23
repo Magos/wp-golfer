@@ -1,7 +1,7 @@
 (ns wp-golfer.core (:require [wp-golfer.retrieval :as re])
   )
 
-(defn expand
+(defn- expand
   "Given a frontier and parent-map,
   expands them with the results of (related-articles (first frontier))
   while respecting existing relationships."
@@ -11,12 +11,13 @@
        related (filter not-existing? (related-articles article))
        nfrontier (drop 1 (into frontier related))
        nparent-map (into parent-map (zipmap related (repeat article)))
+       parent (assoc nparent-map article {:parent (get parent-map article) :children related})
        ]
-    {:frontier nfrontier :parents nparent-map}
+    {:frontier nfrontier :parents parent}
     )
   )
 
-(defn search 
+(defn- search 
   "Perform bi-directional search."
   [f-frontier b-frontier f-parents b-parents]
   (if (some (partial contains? f-parents) (keys b-parents))
@@ -29,10 +30,10 @@
     )
   )
   
-  (defn reconstruct-path [{:keys [forward backward]}]
+  (defn- reconstruct-path [{:keys [forward backward]}]
     (let [overlap (some (set (keys forward)) (keys backward))
-          forward-path (take-while #(not= :start %1) (iterate #(get forward %1) overlap))
-          backward-path (take-while #(not= :finish %1) (iterate #(get backward %1) overlap))
+          forward-path (take-while #(not= :start %1) (iterate #(if-let [a (:parent (get forward %1))] a (get forward %1)) overlap))
+          backward-path (take-while #(not= :finish %1) (iterate #(if-let [a (:parent (get backward %1))] a (get backward %1)) overlap))
           ]
       (concat (reverse (drop 1 forward-path)) backward-path)
       )
@@ -59,4 +60,3 @@
      (merge result {:path (reconstruct-path result)})
     )
   )
- 
