@@ -1,85 +1,72 @@
-(ns wp-golfer.visualisation (:use quil.core))
+(ns wp-golfer.visualisation (:use [quil.core :exclude [random]])
+  (:require wp-golfer.core))
 
 (defn setup []
   (smooth)                          ;;Turn on anti-aliasing
   (frame-rate 1)                    ;;Set framerate to 1 FPS
   (background 0)
   (text-align :center :top)
-  (draw)
+  ;(draw)
   )                 ;;Set the background colour to
                                     ;;  a nice shade of grey.
 (defn draw []
   (background 0)
-  (stroke 255)       
+  (stroke 240)       
   (stroke-weight 3)
   (fill 255)
-  (let[root nil
-     sequence (tree-seq #(not (nil? (:children %))) #(:children %) root)
-     filtered (filter #(contains? *parents* (:name %)) sequence)
+  (let[
+     sequence (tree-seq #(:children %) #(:children %) *parents*)
        ]
-    (doseq [par filtered]
+    (doseq [par sequence]
       (drawnode par)
-      (doseq [chld (:children par)]
-        (line (:x par) (:y par) (:x chld) (:y chld))
-        (drawnode chld)
+      (doseq [child (:children par)]
+        (line (* (:x par) (width)) (* (:y par) (height)) (* (:x child) (width)) (* (:y child) (height))
+              )
         )
       )
     )
   )
 
-(defn drawnode[{:keys [x y name]:as node}]
+(defn drawnode[{:keys [x y name]}]
+  (let[x (* x (width))
+       y (* y (height))
+       ]
     (ellipse  x y 5 5)
+    (stroke 50)
     (text (str name) x y)
+    (stroke 240)
+    )
   )
 
-(comment 
+
+;(comment 
   (defsketch visualization            ;;Define a new sketch named visualization
     :title "Drawing test" 		 				;;Set the title of the sketch
     :setup setup                     	;;Specify the setup fn
     :draw draw         		            ;;Specify the draw fn
     :size [400 520])   
+  ;)
+
+
+(defrecord Node [ x  y name children])
+
+
+(+)
+(def example {:path ["Pathfinding" "Bidirectional_search" "A*"], 
+              :forward {"Digital_object_identifier" "Pathfinding", "Bidirectional_search" "Pathfinding", "Pathfinding" {:parent :start, :children ["Graph_traversal" "Tree_traversal" "Beam_search" "Bidirectional_search" "Branch_and_bound" "British_Museum_algorithm" "Hill_climbing" "Dynamic_programming" "Graph_traversal" "Tree_traversal" "Search_game" "Shortest_path_problem" "Dynamic_programming" "Contraction_hierarchies" "Video_game" "Game_artificial_intelligence" "Navigation_mesh" "Digital_object_identifier" "Main_Page" "Main_Page"]}, "Search_game" "Pathfinding", "Contraction_hierarchies" "Pathfinding", "Hill_climbing" "Pathfinding", "Graph_traversal" "Pathfinding", "Main_Page" "Pathfinding", "Video_game" "Pathfinding", "Game_artificial_intelligence" "Pathfinding", "Beam_search" "Pathfinding", "Navigation_mesh" "Pathfinding", "Dynamic_programming" "Pathfinding", "Branch_and_bound" "Pathfinding", "Shortest_path_problem" "Pathfinding", "Tree_traversal" "Pathfinding", "British_Museum_algorithm" "Pathfinding"},
+              :backward {"Incremental_heuristic_search" "A*", "Bidirectional_search" "A*", "Artificial_intelligence" "A*", "Pathfinding" "A*", "A*" {:parent :finish, :children ["Artificial_intelligence" "List_of_algorithms" "Priority_queue" "Monotonic_function" "Heuristic" "Pathfinding" "Bidirectional_search" "PROGOL" "DRAKON" "Fringe_search" "Incremental_heuristic_search"]}, "Heuristic" "A*", "List_of_algorithms" "A*", "Monotonic_function" "A*", "Priority_queue" "A*", "DRAKON" "A*", "PROGOL" "A*", "Fringe_search" "A*"}
+              }
   )
-
-(def ^:dynamic *parents* (hash-map :start ["Philosophy"] "Philosophy" (vector "Plato" "Confucius" "Forms")
-          "Plato" (vector "Aristotle" "Socrates" "Natural_philosophy"))
-          )
+(def ^:dynamic *parents* (node-ize (:backward example) "A*"))
 
 
-(defrecord Node [ x  y parent name])
 
-
-(def realistic-example {"Mixed_radix" "Arithmetic", "Simon_Stevin" "Arithmetic", "Business" "Arithmetic", "Orders_of_magnitude" "Arithmetic", "Europe" "Arithmetic",
-                        "Arithmetic" :start, "Positional_notation" "Arithmetic", "Inverse_element" "Arithmetic", "Cyrillic_numerals" "Arithmetic", "Leonhard_Euler" "Arithmetic", "Arithmetic_function" "Arithmetic", "International_Standard_Book_Number" "Arithmetic",
-                        "Linear_algebra" "Arithmetic", "Codex_Vigilanus" "Arithmetic", "Probability_theory" "Arithmetic", "Aryabhata" "Arithmetic", "Algebraic_geometry" "Arithmetic", "Topology" "Arithmetic",
-                        "Leonard_Eugene_Dickson" "Arithmetic", "Pure_mathematics" "Arithmetic", "Addition_of_natural_numbers" "Arithmetic", "Ishango_bone" "Arithmetic", "Mathematical_physics" "Arithmetic"
-                        "Polish_notation" "Positional_notation"}
+(defn node-ize [parent-map root-node]
+ (let[wdth (rand )
+      hght (rand )
+      children (:children (get parent-map root-node))
+      child-nodes (map node-ize (repeat parent-map) children)
+      ]
+   (->Node wdth hght root-node child-nodes)
+   )
   )
-
-(defn make-tree [parent-map]
-  (let[root-val (some #(if (= :start (val %)) (key %) nil) parent-map)
-       root (->Node 1 1 nil root-val)
-       source (atom parent-map)
-       collection (transient {root-val root})
-       ]
-    (while (> (count @source) 0)
-      (doseq [entry @source]
-        (let [par (get collection (val entry))
-              node (->Node 1 1 par (str (key entry)))]
-          (if (nil? par)
-            nil
-            (do
-              (assoc! collection (key entry) node)
-              (swap! source #(dissoc % (key entry)))
-              )
-            )          
-          )
-        )
-      )
-    (persistent! collection)
-    )
-  )
-
-
-
-;(make-tree realistic-example)
-
